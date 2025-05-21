@@ -1,29 +1,28 @@
-import React from 'react';
-import videojs from 'video.js';
-import 'video.js/dist/video-js.css';
+import React, { useRef, useEffect } from "react";
+import videojs from "video.js";
+import "video.js/dist/video-js.css";
 
-export const VideoJS = (props) => {
-  const videoRef = React.useRef(null);
-  const playerRef = React.useRef(null);
-  const {options, onReady} = props;
+export const VideoPlayer = (props) => {
+  const videoRef = useRef(null);
+  const playerRef = useRef(null);
+  const { options, onReady } = props;
 
-  React.useEffect(() => {
-
+  useEffect(() => {
     // Make sure Video.js player is only initialized once
     if (!playerRef.current) {
-      // The Video.js player needs to be _inside_ the component el for React 18 Strict Mode. 
+      // The Video.js player needs to be _inside_ the component el for React 18 Strict Mode.
       const videoElement = document.createElement("video-js");
 
-      videoElement.classList.add('vjs-big-play-centered');
+      videoElement.classList.add("vjs-big-play-centered");
       videoRef.current.appendChild(videoElement);
 
-      const player = playerRef.current = videojs(videoElement, options, () => {
-        videojs.log('player is ready');
+      const player = (playerRef.current = videojs(videoElement, options, () => {
+        videojs.log("player is ready");
         onReady && onReady(player);
-      });
+      }));
 
-    // You could update an existing player in the `else` block here
-    // on prop change, for example:
+      // You could update an existing player in the `else` block here
+      // on prop change, for example:
     } else {
       const player = playerRef.current;
 
@@ -33,7 +32,7 @@ export const VideoJS = (props) => {
   }, [options, videoRef]);
 
   // Dispose the Video.js player when the functional component unmounts
-  React.useEffect(() => {
+  useEffect(() => {
     const player = playerRef.current;
 
     return () => {
@@ -45,10 +44,10 @@ export const VideoJS = (props) => {
   }, [playerRef]);
 
   return (
-    <div data-vjs-player>
+    <div data-vjs-player style={{ width: "600px" }}>
       <div ref={videoRef} />
     </div>
   );
-}
+};
 
-export default VideoJS;
+export default VideoPlayer;
