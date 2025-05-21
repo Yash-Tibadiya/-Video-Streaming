@@ -3,6 +3,8 @@ import cors from "cors";
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
+import fs from "fs";
+import { exec } from "child_process"; // watch it
 
 const app = express();
 const PORT = 8000;
@@ -48,8 +50,19 @@ app.get("/", (req, res) => {
 });
 
 app.post("/upload", upload.single("file"), (req, res) => {
-  res.send({ message: "File uploaded successfully" });
-  res.end(); 
+  const smallPartId = uuidv4();
+  const videoPath = req.file.path;
+  const outputPath = `./uploads/videos/${smallPartId}`;
+  const hlsPath = `${outputPath}/index.m3u8`;
+  console.log("hlsPath : ", hlsPath);
+
+  //! Create the output directory if it doesn't exist
+  if (!fs.existsSync(outputPath)) {
+    fs.mkdirSync(outputPath, { recursive: true });
+  }
+  
+  //! Convert video to HLS format using FFmpeg
+  const ffmpegCommand = `ffmpeg -i ${videoPath} -codec:v libx264 -codec:a aac -hls_time 10 -hls_playlist_type vod -hls_segment_filename "${outputPath}/segment%03d.ts" -start_number 0 ${hlsPath}`;
 });
 
 app.listen(PORT, () => {
