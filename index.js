@@ -64,6 +64,8 @@ app.post("/upload", upload.single("file"), (req, res) => {
   //! Convert video to HLS format using FFmpeg
   const ffmpegCommand = `ffmpeg -i ${videoPath} -codec:v libx264 -codec:a aac -hls_time 10 -hls_playlist_type vod -hls_segment_filename "${outputPath}/segment%03d.ts" -start_number 0 ${hlsPath}`;
 
+  // const ffmpegCommand = `ffmpeg -i ${videoPath} -codec:v libx264 -preset faster -crf 28 -bufsize 1M -maxrate 2M -codec:a aac -ar 44100 -b:a 128k -hls_time 10 -hls_playlist_type vod -hls_segment_filename "${outputPath}/segment%03d.ts" -start_number 0 ${hlsPath}`;
+
   // Don't use this is production [No Queue]
   exec(ffmpegCommand, (error, stdout, stderr) => {
     if (error) {
@@ -73,7 +75,7 @@ app.post("/upload", upload.single("file"), (req, res) => {
     console.log(`stdout: ${stdout}`);
     console.log(`stderr: ${stderr}`);
 
-    const videoUrl = `http://localhost:8000/uploads/videos/${smallPartId}/index.m3u8`;
+    const videoUrl = `http://localhost:${PORT}/uploads/videos/${smallPartId}/index.m3u8`;
 
     res.json({
       message: "Video uploaded and converted to HLS successfully",
