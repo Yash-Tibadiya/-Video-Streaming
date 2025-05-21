@@ -60,9 +60,27 @@ app.post("/upload", upload.single("file"), (req, res) => {
   if (!fs.existsSync(outputPath)) {
     fs.mkdirSync(outputPath, { recursive: true });
   }
-  
+
   //! Convert video to HLS format using FFmpeg
   const ffmpegCommand = `ffmpeg -i ${videoPath} -codec:v libx264 -codec:a aac -hls_time 10 -hls_playlist_type vod -hls_segment_filename "${outputPath}/segment%03d.ts" -start_number 0 ${hlsPath}`;
+
+  // Don't use this is production [No Queue]
+  exec(ffmpegCommand, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error: ${error.message}`);
+      return res.status(500).json({ error: "Error processing video" });
+    }
+    console.log(`stdout: ${stdout}`);
+    console.log(`stderr: ${stderr}`);
+
+    const videoUrl = `http://localhost:8000/uploads/videos/${smallPartId}/index.m3u8`;
+
+    res.json({
+      message: "Video uploaded and converted to HLS successfully",
+      videoUrl: videoUrl,
+      smallPartId: smallPartId,
+    });
+  });
 });
 
 app.listen(PORT, () => {
